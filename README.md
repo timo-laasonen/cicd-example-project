@@ -13,3 +13,5 @@ Then, you can run the app with:
     npm start
 
 Once it is running, you can access it in a browser at [http://localhost:3000](http://localhost:3000)
+
+Using localhost Jenkins running on Docker and this repository has webhook configured with Jenkins. With localhost setup localtunnel (https://www.npmjs.com/package/localtunnel) is needed that GitHub can access locally running Jenkins. 
