@@ -8,65 +8,50 @@ pipeline {
                 archiveArtifacts artifacts: 'build/dist/trainSchedule.zip'
             }
         }
-        stage('DeployToStaging') {
+        stage('Build Docker Image') {
             when {
                 branch 'main'
             }
             steps {
-                withCredentials([usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
-                    sshPublisher(
-                        failOnError: true,
-                        continueOnError: false,
-                        publishers: [
-                            sshPublisherDesc(
-                                configName: 'staging',
-                                sshCredentials: [
-                                    username: "$USERNAME",
-                                    encryptedPassphrase: "$USERPASS"
-                                ],
-                                transfers: [
-                                    sshTransfer(
-                                        sourceFiles: 'build/dist/trainSchedule.zip',
-                                        removePrefix: 'build/dist/',
-                                        remoteDirectory: '/tmp',
-                                        execCommand: 'sudo /usr/bin/systemctl stop train-schedule && rm -rf /opt/train-schedule/* && unzip /tmp/trainSchedule.zip -d /opt/train-schedule && sudo /usr/bin/systemctl start train-schedule'
-                                    )
-                                ]
-                            )
-                        ]
-                    )
+                script {
+                    app = docker.build("timolaasonen/train-schedule")
+                    app.inside {
+                        sh 'echo $(curl localhost:3000)'
+                    }
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            when {
+                branch 'main'
+            }
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker_hub_login') {
+                        app.push("${env.BUILD_NUMBER}")
+                        app.push("latest")
+                    }
                 }
             }
         }
         stage('DeployToProduction') {
             when {
-                branch 'main'
+                branch 'master'
             }
             steps {
-                input 'Does staging work as expected?'
+                input 'Deploy to Production?'
                 milestone(1)
                 withCredentials([usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
-                    sshPublisher(
-                        failOnError: true,
-                        continueOnError: false,
-                        publishers: [
-                            sshPublisherDesc(
-                                configName: 'production',
-                                sshCredentials: [
-                                    username: "$USERNAME",
-                                    encryptedPassphrase: "$USERPASS"
-                                ],
-                                transfers: [
-                                    sshTransfer(
-                                        sourceFiles: 'build/dist/trainSchedule.zip',
-                                        removePrefix: 'build/dist/',
-                                        remoteDirectory: '/tmp',
-                                        execCommand: 'sudo /usr/bin/systemctl stop train-schedule && rm -rf /opt/train-schedule/* && unzip /tmp/trainSchedule.zip -d /opt/train-schedule && sudo /usr/bin/systemctl start train-schedule'
-                                    )
-                                ]
-                            )
-                        ]
-                    )
+                    script {
+                        sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker pull willbla/train-schedule:${env.BUILD_NUMBER}\""
+                        try {
+                            sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker stop train-schedule\""
+                            sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker rm train-schedule\""
+                        } catch (err) {
+                            echo: 'caught error: $err'
+                        }
+                        sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker run --restart always --name train-schedule -p 3000:3000 -d willbla/train-schedule:${env.BUILD_NUMBER}\""
+                    }
                 }
             }
         }
