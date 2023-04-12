@@ -28,6 +28,9 @@ pipeline {
             when {
                 branch 'main'
             }
+            environment {
+                registryCredential = 'docker_hub_login'
+            }
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
