@@ -19,7 +19,7 @@ pipeline {
                 script {
                     app = docker.build(DOCKER_IMAGE_NAME)
                     app.inside {
-                        sh 'echo $(curl localhost:3000)'
+                        sh 'echo $(curl localhost:8080)'
                     }
                 }
             }
@@ -28,9 +28,12 @@ pipeline {
             when {
                 branch 'main'
             }
+            environment {
+                registryCredential = 'docker_hub_login'
+            }
             steps {
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'docker_hub_login') {
+                    docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
                         app.push("${env.BUILD_NUMBER}")
                         app.push("latest")
                     }

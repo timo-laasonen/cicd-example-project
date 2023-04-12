@@ -7,5 +7,5 @@ COPY package*.json .
 RUN npm ci --omit=dev
 # Bundle app source
 COPY . .
-EXPOSE 3000
+EXPOSE 8080
 CMD ["node", "./bin/www" ]
