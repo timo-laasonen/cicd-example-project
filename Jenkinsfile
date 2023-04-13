@@ -18,9 +18,6 @@ pipeline {
             steps {
                 script {
                     app = docker.build(DOCKER_IMAGE_NAME)
-                    app.inside {
-                        sh 'echo $(curl localhost:8080)'
-                    }
                 }
             }
         }
@@ -48,16 +45,15 @@ pipeline {
 			steps {
                 input 'Deploy to Production?'
                 milestone(1)
-                withKubeConfig([
-                    credentialsId: "kubeconfig"
-                ]) {
-                    sh "kubectl config use-context kubernetes-admin@kubernetes"
-                    sh 'echo $KUBECONFIG'
-                    sh 'cat $KUBECONFIG'
-
-                    //Deploy with Helm
-                    echo "Deploying"
-                    sh "kubectl get nodes"
+                sshagent(['kubernetes-key']) {
+                    sh "scp -o StrictHostKeyChecking=no train-schedule-kube.yml cloud_user@$control_ip:/home/cloud_user/tmp/"
+                    script {
+                        try {
+                            sh "ssh cloud_user@$control_ip kubectl apply -f tmp"
+                        } catch(error) {
+                            sh "ssh cloud_user@$control_ip kubectl create -f tmp"
+                        }
+                    }
                 }
             }
 		}
