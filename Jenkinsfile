@@ -49,7 +49,7 @@ pipeline {
                 input 'Deploy to Production?'
                 milestone(1)
                 withKubeConfig([
-                    credentialsId: "kubeconfig",
+                    credentialsId: "kube-master",
                     serverUrl: "https://18.132.248.239",
                     clusterName: "kubernetes",
                     contextName: "kubernetes-admin@kubernetes"
