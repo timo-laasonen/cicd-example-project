@@ -48,9 +48,12 @@ pipeline {
 			steps {
                 input 'Deploy to Production?'
                 milestone(1)
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                    // change context with related namespace
-                    sh "kubectl config set-context kubernetes-admin@kubernetes --server=https://18.132.248.239"
+                withKubeConfig([
+                    credentialsId: "	kubeconfig",
+                    serverUrl: "https://18.132.248.239"
+                ]) {
+                    sh 'echo $KUBECONFIG'
+                    sh 'cat $KUBECONFIG'
 
                     //Deploy with Helm
                     echo "Deploying"
