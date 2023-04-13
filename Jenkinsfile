@@ -50,6 +50,13 @@ pipeline {
                 milestone(1)
                 sshagent(['kubernetes-key']) {
                     sh 'scp -o StrictHostKeyChecking=no train-schedule-kube.yml cloud_user@18.132.247.26:/home/cloud_user/tmp/'
+                    script {
+                        try {
+                            sh 'ssh cloud_user@18.132.247.26 kubectl apply -f tmp'
+                        } catch(error) {
+                            sh 'ssh cloud_user@18.132.247.26 kubectl create -f tmp
+                        }
+                    }
                 }
             }
 		}
