@@ -49,7 +49,7 @@ pipeline {
                 input 'Deploy to Production?'
                 milestone(1)
                 sshagent(['kubernetes-key']) {
-                    sh 'kubectl get pods'
+                    sh 'kubectl get nodes'
                 }
             }
 		}
