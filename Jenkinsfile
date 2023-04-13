@@ -48,8 +48,13 @@ pipeline {
 			steps {
                 input 'Deploy to Production?'
                 milestone(1)
-                withKubeConfig([credentialsId: 'kube-master', serverUrl: 'https://18.132.248.239']) {
-                    sh 'kubectl apply -f train-schedule-kube.yml'
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    // change context with related namespace
+                    sh "kubectl config set-context $(kubectl config current-context)"
+
+                    //Deploy with Helm
+                    echo "Deploying"
+                    sh "kubectl get nodes"
                 }
             }
 		}
