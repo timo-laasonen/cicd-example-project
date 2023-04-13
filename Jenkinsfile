@@ -49,8 +49,10 @@ pipeline {
                 input 'Deploy to Production?'
                 milestone(1)
                 withKubeConfig([
-                    credentialsId: "	kubeconfig",
-                    serverUrl: "https://18.132.248.239"
+                    credentialsId: "kubeconfig",
+                    serverUrl: "https://18.132.248.239",
+                    clusterName: "kubernetes",
+                    contextName: "kubernetes-admin@kubernetes"
                 ]) {
                     sh 'echo $KUBECONFIG'
                     sh 'cat $KUBECONFIG'
