@@ -40,21 +40,22 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to K8s')
+        stage('DeployToProduction')
 		{
-			steps{
-				sshagent(['k8s-jenkins'])
-				{
-					sh 'scp -r -o StrictHostKeyChecking=no train-schedule-kube.yml cloud_user@$control_ip:/tmp'
-					script{
-						try{
-							sh 'ssh cloud_user@$control_ip kubectl apply -f /tmp/train-schedule-kube.yml --kubeconfig=~/.kube/config'
-							}catch(error)
-							{
-							}
-					}
-				}
-			}
+            when {
+                branch 'main'
+            }
+			steps {
+                input 'Deploy to Production?'
+                milestone(1)
+                withCredentials([usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
+                    script {
+                        sh "envsubst < ./train-schedule-kube.yml > /tmp/train-schedule-kube.yml && sshpass -p '$USERPASS' StrictHostKeyChecking=no -v scp /tmp/train-schedule-kube.yml $USERNAME@$control_ip:/tmp/ && rm /tmp/train-schedule-kube.yml"
+                        sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$control_ip \"kubectl apply -f /tmp/train-schedule-kube.yml && rm /tmp/train-schedule-kube.yml\""
+                    }
+
+                }
+            }
 		}
     }
 }
