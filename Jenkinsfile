@@ -50,7 +50,7 @@ pipeline {
                 milestone(1)
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     // change context with related namespace
-                    sh "kubectl config current-context"
+                    sh "kubectl config --kubeconfig=$KUBECONFIG set-cluster kubernetes --server=https://18.132.248.239"
 
                     //Deploy with Helm
                     echo "Deploying"
