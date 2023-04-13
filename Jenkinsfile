@@ -54,7 +54,7 @@ pipeline {
                         try {
                             sh 'ssh cloud_user@18.132.247.26 kubectl apply -f tmp'
                         } catch(error) {
-                            sh 'ssh cloud_user@18.132.247.26 kubectl create -f tmp
+                            sh 'ssh cloud_user@18.132.247.26 kubectl create -f tmp'
                         }
                     }
                 }
