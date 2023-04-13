@@ -49,7 +49,7 @@ pipeline {
                 input 'Deploy to Production?'
                 milestone(1)
                 sshagent(['kubernetes-key']) {
-                    sh "envsubst < ./train-schedule-kube.yml > /tmp/train-schedule-kube.yml && scp -o StrictHostKeyChecking=no /tmp/train-schedule-kube.yml cloud_user@18.132.247.26:/home/cloud_user/tmp/ && rm /tmp/train-schedule-kube.yml
+                    sh 'envsubst < ./train-schedule-kube.yml > /tmp/train-schedule-kube.yml && scp -o StrictHostKeyChecking=no /tmp/train-schedule-kube.yml cloud_user@18.132.247.26:/home/cloud_user/tmp/ && rm /tmp/train-schedule-kube.yml'
                 }
             }
 		}
