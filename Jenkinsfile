@@ -49,9 +49,9 @@ pipeline {
                     clusterName: 'kubernetes', 
                     credentialsId: 'kube-token', 
                     namespace: 'kube-system', 
-                    serverUrl: 'https://18.133.189.165:6443'
+                    serverUrl: "https://$control_ip:6443"
                 ]]) {
-                    sh "kubectl get nodes"
+                    sh "kubectl apply -f train-schedule-kube.yml"
                 }
             }
 		}
