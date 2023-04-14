@@ -45,15 +45,13 @@ pipeline {
 			steps {
                 input 'Deploy to Production?'
                 milestone(1)
-                sshagent(['kubernetes-key']) {
-                    sh "scp -o StrictHostKeyChecking=no train-schedule-kube.yml cloud_user@$control_ip:/home/cloud_user/tmp/"
-                    script {
-                        try {
-                            sh "ssh cloud_user@$control_ip kubectl apply -f tmp"
-                        } catch(error) {
-                            sh "ssh cloud_user@$control_ip kubectl create -f tmp"
-                        }
-                    }
+                withKubeCredentials(kubectlCredentials: [[
+                    clusterName: 'kubernetes', 
+                    credentialsId: 'kube-token', 
+                    namespace: 'kube-system', 
+                    serverUrl: 'https://172.31.33.3:6443'
+                ]]) {
+                    sh "kubectl get nodes"
                 }
             }
 		}
