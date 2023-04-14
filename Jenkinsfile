@@ -49,7 +49,7 @@ pipeline {
                     clusterName: 'kubernetes', 
                     credentialsId: 'kube-token', 
                     namespace: 'kube-system', 
-                    serverUrl: 'https://172.31.33.3:6443'
+                    serverUrl: 'https://18.133.189.165:6443'
                 ]]) {
                     sh "kubectl get nodes"
                 }
