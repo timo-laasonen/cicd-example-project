@@ -48,7 +48,7 @@ pipeline {
                 withKubeCredentials(kubectlCredentials: [[
                     clusterName: 'kubernetes', 
                     credentialsId: 'kube-token', 
-                    namespace: 'kube-system', 
+                    namespace: 'default', 
                     serverUrl: "https://$control_ip:6443"
                 ]]) {
                     sh "kubectl apply -f train-schedule-kube.yml"
